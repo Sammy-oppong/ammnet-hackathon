@@ -1,0 +1,453 @@
+---
+title: "Live Session 6: GitHub, R & Quarto for Reproducible Public Health Data Science"
+format:
+  html:
+    toc: true
+    html-math-method: katex
+    css: styles.css
+author: 
+  - Justin Millar
+date: "2026-01-05"
+categories: 
+ - R
+ - Git
+ - GitHub
+ - Version Control
+ - Live session
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+![](ammnet-github-infograph.png){fig-alt="GitHub, R, and Quarto workflow infographic"}
+
+# Overview
+
+This live session introduces a practical workflow for version control and
+reproducible reporting using GitHub, R, and Quarto. We will move from local
+projects to publishable, shareable outputs with a minimal but robust setup.
+
+# Who this is for
+
+- R users who are new to Git and GitHub
+- Analysts who want a clean, repeatable workflow for public health projects
+- Anyone preparing to publish Quarto documents or GitHub Pages sites
+
+# What you will learn
+
+- Why version control matters for public health data science
+- How to connect RStudio to GitHub securely
+- How to structure a project for collaboration and reproducibility
+- How to use Quarto for reports and websites
+- How to publish a project using GitHub Pages
+
+# Mini-case example for the session
+
+We will use a small, realistic dataset to practice a reproducible
+workflow from data import to a published report. The example mimics a
+monthly district summary often used in routine surveillance.
+
+In this mini-case, you are supporting a district review meeting where
+the program team wants to understand whether recent increases in
+suspected malaria cases reflect a true rise in transmission or shifts
+in testing effort. You will compare districts across a few months,
+calculate positivity, and prepare a short summary that could be shared
+with colleagues and decision makers.
+
+This is also a gentle introduction to Quarto. If you have not used
+Quarto before, think of it as a modern, easy way to combine R code,
+results, and narrative text in a single document. We will use Quarto to
+turn the analysis into a clean report that can be shared or published
+online, without copying and pasting output by hand.
+
+You can think of the Quarto workflow in three steps:
+
+1. Write your analysis and narrative in a single `.qmd` file
+2. Render to HTML with one command
+3. Publish the output to GitHub Pages
+
+This blog post is being created using the same process, so you can use
+it as a real example of the workflow we will practice together.
+
+::: {.callout-note title="This post uses the same workflow"}
+This post is written in Quarto, rendered to HTML, and published with
+GitHub Pages. You can follow the exact same steps during the session.
+:::
+
+## Case question
+
+Which districts show a rise in suspected malaria cases over the last
+three months, and how do testing numbers affect interpretation?
+
+During the session, we will:
+
+1. Commit the raw data import
+2. Commit the cleaned dataset with a clear message
+3. Add a Quarto report section with the figure
+4. Publish the report to GitHub Pages
+
+# Session outline
+
+1. Version control concepts in plain language
+2. Git setup and authentication
+3. Creating a new R project with Git
+4. Project structure and .gitignore best practices
+5. First commits and commit messages that tell a story
+6. Pushing to GitHub and working with issues
+7. Building a Quarto document and publishing
+
+# Before the session
+
+Please complete the steps below so we can spend the session coding together.
+
+## Install and verify Git
+
+Install Git if needed:
+
+<https://git-scm.com/downloads>
+
+Then, in RStudio:
+
+``` r
+#| eval: false
+usethis::git_sitrep()
+```
+
+If anything is missing, follow the instructions shown in the report.
+
+## Authenticate GitHub from R
+
+``` r
+#| eval: false
+usethis::gh_token_help()
+```
+
+Verify stored credentials:
+
+``` r
+#| eval: false
+gitcreds::gitcreds_get()
+```
+
+Optional but recommended:
+
+``` r
+#| eval: false
+usethis::use_git_config(
+  user.name = "Your Name",
+  user.email = "your_email@example.com"
+)
+```
+
+# Core Git workflow (add, commit, push)
+
+If this is your first time using Git, the basic cycle is:
+
+1. Make changes to your files
+2. Add the files you want to track
+3. Commit with a clear message
+4. Push your commits to GitHub
+
+### RStudio Git tab (recommended)
+
+1. Save your files
+2. Open the **Git** tab
+3. Check the files you want to include
+4. Click **Commit**, write a message, and commit
+5. Click **Push** to send changes to GitHub
+
+### Command line (equivalent)
+
+``` bash
+#| eval: false
+git status
+git add README.md
+git commit -m "Add project overview"
+git push
+```
+
+### Common commands and what they do
+
+- `git status` shows what changed
+- `git add` stages changes for a commit
+- `git commit -m "message"` saves a snapshot
+- `git push` sends commits to GitHub
+- `git pull` gets the latest changes from GitHub
+- `git log --oneline` shows your recent history
+
+### Commit message tips
+
+- Start with a verb (e.g., "Add", "Fix", "Update")
+- Keep it short but specific
+- Mention the main change, not every detail
+
+Example:
+
+```         
+Add summary plot for malaria case trends
+```
+
+### Mini-exercise: recover from a mistake
+
+Use this if time allows. The goal is to see how Git helps you undo a
+change safely.
+
+1. Open a script or Quarto file and make a small edit
+2. Check what changed:
+
+``` bash
+#| eval: false
+git status
+```
+
+3. Discard the change:
+
+``` bash
+#| eval: false
+git restore path/to/file.qmd
+```
+
+4. Confirm the file is back to its original state:
+
+``` bash
+#| eval: false
+git status
+```
+
+If you prefer the RStudio interface, you can right-click a file in the
+**Git** tab and choose **Revert**.
+
+### Mini-exercise: undo a staged file
+
+This helps if you accidentally staged the wrong file.
+
+``` bash
+#| eval: false
+git add path/to/file.qmd
+git status
+git restore --staged path/to/file.qmd
+git status
+```
+
+### Mini-exercise: review a diff before commit
+
+Use this to see exactly what will be committed.
+
+``` bash
+#| eval: false
+git diff
+git diff --staged
+```
+
+# During the session
+
+We will build a small example project together. If you want to follow along,
+open RStudio and have a folder ready where you can create a new project.
+
+## Suggested project structure
+
+``` r
+#| eval: false
+fs::dir_create(c("data", "scripts", "outputs", "local"))
+```
+
+Creating a clear structure early saves time later. It keeps raw data,
+cleaning scripts, and outputs separated so collaborators can find what
+they need quickly. It also makes it easier to automate your workflow
+and reduces the chance of accidentally overwriting files or mixing raw
+and processed data.
+
+```         
+project/
+  data/         # raw data files
+  scripts/      # R scripts
+  outputs/      # cleaned data, figures, models
+  local/        # private or sensitive files (ignored)
+  README.md
+  index.qmd     # Quarto document
+```
+
+## Example .gitignore
+
+Use a `.gitignore` file to tell Git which files should never be tracked.
+Add it early in the project so you do not accidentally commit large
+datasets, temporary files, or anything sensitive. You can update
+`.gitignore` at any time, but it only affects new changes, so it is best
+to put it in place before you start adding files.
+
+```         
+.Rhistory
+.RData
+/local/
+*.docx
+*.tmp
+```
+
+## Collaborating with GitHub Issues
+
+Issues are a lightweight way to coordinate work and keep a clear record
+of decisions. They help teams capture tasks, bugs, and questions in one
+place so progress is visible to everyone.
+
+Key features to know:
+
+- Labels to group work (e.g., `bug`, `data`, `documentation`)
+- Assignees to show who is responsible for a task
+- Checklists to break work into steps
+- References that link issues to commits and pull requests
+
+Good issue hygiene:
+
+- Write a clear title and short description
+- Add context, links, or screenshots when useful
+- Keep issues focused on one task or decision
+
+To collaborate with others, add them to your repository:
+
+1. Open the repo on GitHub
+2. Go to **Settings** → **Collaborators and teams**
+3. Invite a collaborator by GitHub username or email
+
+Once they accept, they can push changes, open issues, and submit pull
+requests (depending on permissions).
+
+### Example issue template
+
+```         
+**Task:** Add data dictionary for malaria routine data
+
+**Why this matters**
+- Clarifies variable definitions for collaborators
+- Supports reproducibility and handover
+
+**Steps**
+- [ ] Draft variable list and descriptions
+- [ ] Add to `README.md`
+- [ ] Link the issue in the next commit
+
+**Assigned to:** @username
+```
+
+# Quarto and publishing
+
+We will create a simple Quarto document and publish it with GitHub Pages.
+
+``` yaml
+title: "My First Quarto Document"
+format: html
+editor: visual
+```
+
+## Build the example Quarto document
+
+Create a file called `index.qmd` in your project root and add a short
+write-up plus the mini-case R code. Below is a minimal working example
+you can paste and adapt.
+
+### Summary
+
+This report checks recent suspected malaria cases and test positivity
+across districts.
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+case_data <- read_csv("data/malaria_routine_data.csv")
+
+case_summary <- case_data %>%
+  mutate(positivity = positive_tests / tests_done) %>%
+  group_by(district) %>%
+  summarise(
+    total_cases = sum(suspected_cases),
+    mean_positivity = mean(positivity)
+  ) %>%
+  arrange(desc(total_cases))
+
+case_summary
+```
+
+```{r}
+ggplot(case_data, aes(month, suspected_cases, color = district)) +
+  geom_line(linewidth = 1) +
+  geom_point() +
+  labs(
+    title = "Suspected malaria cases by district",
+    x = "Month",
+    y = "Suspected cases"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+interactive_plot <- ggplot(case_data, aes(month, suspected_cases, color = district)) +
+  geom_line(linewidth = 1) +
+  geom_point() +
+  labs(
+    title = "Suspected malaria cases by district (interactive)",
+    x = "Month",
+    y = "Suspected cases"
+  ) +
+  theme_minimal()
+
+plotly::ggplotly(interactive_plot)
+```
+
+Publishing workflow:
+
+``` r
+#| eval: false
+usethis::use_github_pages()
+```
+
+``` bash
+#| eval: false
+quarto preview
+```
+
+``` bash
+#| eval: false
+quarto publish gh-pages
+```
+
+If you have not installed Plotly before:
+
+``` r
+#| eval: false
+install.packages("plotly")
+```
+
+## Beyond a basic report
+
+Quarto and GitHub Pages can publish far more than a static report. Once
+you are comfortable with the basics, you can explore:
+
+- Dashboards for routine monitoring and rapid summaries
+- Interactive maps for spatial data and intervention targeting
+- Slide decks for presentations and briefings
+- Websites for documentation, data dictionaries, and project notes
+
+These options use the same workflow: build your content in Quarto, then
+publish it with GitHub Pages.
+
+# Practice exercises
+
+1. Create a new R project with Git enabled
+2. Make three commits with descriptive messages
+3. Push to GitHub
+4. Create a Quarto `index.qmd` and publish to GitHub Pages
+5. Open a GitHub Issue to track a next step
+
+# Resources
+
+- Happy Git with R: <https://happygitwithr.com/>
+- Quarto documentation: <https://quarto.org>
+- GitHub Pages with Quarto: <https://quarto.org/docs/publishing/github-pages.html>
+- Git cheat sheet: <https://git-scm.com/docs>
+
+# Questions or help
+
+If you run into setup issues before the session, share the output of
+`usethis::git_sitrep()` in the cohort channel so we can troubleshoot.
